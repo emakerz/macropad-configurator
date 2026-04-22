@@ -1,7 +1,7 @@
 # 🎛️ Macropad Configurator
 
 Interface web de configuration pour macropad DIY à base d'**Arduino Pro Micro**.  
-Projet présenté sur la chaîne YouTube **[eMakerz](https://www.youtube.com/@emakerz)** — abonne-toi pour ne rien rater !
+Projet présenté sur la chaîne YouTube **[Enzo Emakerz](https://www.youtube.com/@emakerz)** — abonne-toi pour ne rien rater !
 
 ---
 
