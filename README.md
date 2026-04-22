@@ -38,13 +38,12 @@ Installe ces librairies via le gestionnaire de librairies Arduino IDE (`Outils �
 
 ### 2. Flasher le code
 
-1. Télécharge [`macropad_v4.ino`](https://github.com/emakerz/macropad-configurator/raw/main/macropad_v4.ino)
+1. Télécharge [`macropad_v4.ino`](https://github.com/emakerz/macropad-configurator/raw/main/macropad.ino)
 2. Ouvre-le dans Arduino IDE
 3. Sélectionne la carte : `Outils → Type de carte → Arduino Leonardo` (ou Pro Micro selon ton IDE)
 4. Sélectionne le bon port USB
 5. Clique sur **Téléverser**
 
-> ⚠️ Si la carte n'est plus détectée après un flash raté, double-clique rapidement sur le bouton Reset pour entrer en mode bootloader (la LED clignote), puis téléverse immédiatement.
 
 ---
 
