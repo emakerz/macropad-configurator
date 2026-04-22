@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macropad Configurator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3f;
+    --accent: #7c6af7;
+    --accent2: #f7716a;
+    --text: #e8e8f0;
+    --text-dim: #6a6a8a;
+    --green: #6af7a0;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1000; opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  header { width: 100%; max-width: 920px; padding: 44px 24px 20px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .logo-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 6px; }
+  h1 { font-size: clamp(26px, 4.5vw, 40px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+  h1 span { color: var(--accent); }
+
+  #connect-btn {
+    background: var(--accent); color: #fff; border: none; padding: 11px 22px;
+    border-radius: 8px; font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+  }
+  #connect-btn:hover { background: #6a58e0; transform: translateY(-1px); }
+  #connect-btn.connected { background: var(--green); color: #000; }
+  #connect-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .status-bar { width: 100%; max-width: 920px; padding: 0 24px 18px; }
+  .status-pill { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); padding: 6px 14px; background: var(--surface); border-radius: 100px; border: 1px solid var(--border); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); transition: background 0.3s; }
+  .status-dot.ok  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.err { background: var(--accent2); }
+
+  main { width: 100%; max-width: 920px; padding: 0 24px 60px; display: flex; flex-direction: column; gap: 22px; }
+
+  .profile-tabs { display: flex; gap: 4px; background: var(--surface); padding: 4px; border-radius: 10px; border: 1px solid var(--border); width: fit-content; }
+  .tab-btn { background: none; border: none; color: var(--text-dim); font-family: var(--sans); font-size: 14px; font-weight: 700; padding: 9px 26px; border-radius: 7px; cursor: pointer; transition: all 0.2s; }
+  .tab-btn.active { background: var(--accent); color: #fff; }
+  .tab-btn:not(.active):hover { color: var(--text); background: var(--surface2); }
+
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+  .buttons-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .encoder-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .key-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.2s; }
+  .key-card:hover { border-color: rgba(124,106,247,0.5); }
+  .key-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .key-number { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em; white-space: nowrap; }
+  .key-preview { font-family: var(--mono); font-size: 11px; color: var(--accent); background: rgba(124,106,247,0.1); padding: 2px 8px; border-radius: 4px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .key-capture-btn { background: var(--surface2); border: 1px dashed var(--border); color: var(--text-dim); font-family: var(--mono); font-size: 11px; padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: center; width: 100%; }
+  .key-capture-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(124,106,247,0.05); }
+
+  .log-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); height: 78px; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 3px; }
+  .log-line { line-height: 1.6; }
+  .log-line.ok   { color: var(--green); }
+  .log-line.err  { color: var(--accent2); }
+  .log-line.info { color: var(--accent); }
+
+  .footer-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .reset-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); font-family: var(--mono); font-size: 11px; padding: 10px 18px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .reset-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .hint { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+
+  .divider { width: 100%; height: 1px; background: var(--border); }
+
+  /* ---- Overlay ---- */
+  #capture-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+  #capture-overlay.active { display: flex; }
+
+  .capture-modal { background: var(--surface); border: 1px solid var(--accent); border-radius: 20px; padding: 36px 44px; text-align: center; max-width: 460px; width: 90%; box-shadow: 0 0 80px rgba(124,106,247,0.15); }
+  .capture-modal h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .capture-modal .sub { color: var(--text-dim); font-size: 13px; margin-bottom: 20px; line-height: 1.6; }
+
+  .capture-tabs { display: flex; gap: 4px; background: var(--surface2); padding: 4px; border-radius: 8px; margin-bottom: 20px; }
+  .capture-tab { flex: 1; background: none; border: none; color: var(--text-dim); font-family: var(--mono); font-size: 11px; padding: 8px 4px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+  .capture-tab.active { background: var(--accent); color: #fff; }
+
+  .capture-panel { display: none; }
+  .capture-panel.active { display: block; }
+
+  /* Panel clavier */
+  .capture-display { font-family: var(--mono); font-size: 24px; color: var(--accent); min-height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; letter-spacing: 0.04em; }
+  .capture-hint { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+
+  /* Panel consumer */
+  .consumer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .consumer-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 11px; padding: 12px 6px; border-radius: 8px; cursor: pointer; transition: all 0.2s; line-height: 1.5; text-align: center; }
+  .consumer-btn:hover { border-color: var(--accent); background: rgba(124,106,247,0.1); }
+
+  .capture-cancel { background: none; border: 1px solid var(--border); color: var(--text-dim); font-family: var(--mono); font-size: 11px; padding: 10px 22px; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin-top: 18px; }
+  .capture-cancel:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  #no-serial { display: none; background: rgba(247,113,106,0.08); border: 1px solid var(--accent2); color: var(--accent2); font-family: var(--mono); font-size: 12px; padding: 12px 16px; border-radius: 8px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-tag">// Arduino Pro Micro · WebSerial</div>
+    <h1>Macro<span>pad</span><br>Configurator</h1>
+  </div>
+  <button id="connect-btn">⚡ Connecter</button>
+</header>
+
+<div class="status-bar">
+  <div class="status-pill">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">Non connecté — branchez votre macropad en USB</span>
+  </div>
+</div>
+
+<main>
+  <div id="no-serial">
+    ⚠ WebSerial non supporté. Utilisez <strong>Chrome</strong> ou <strong>Edge</strong> — pas Firefox, pas Safari.
+  </div>
+
+  <div>
+    <div class="section-label">Profil actif</div>
+    <div class="profile-tabs">
+      <button class="tab-btn active" onclick="switchProfile(0)">Profil 1</button>
+      <button class="tab-btn" onclick="switchProfile(1)">Profil 2</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">Boutons (1 → 6)</div>
+    <div class="buttons-grid" id="buttons-grid"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div>
+    <div class="section-label">Encodeur rotatif</div>
+    <div class="encoder-row" id="encoder-row"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div>
+    <div class="section-label">Log de communication</div>
+    <div class="log-box" id="log"></div>
+  </div>
+
+  <div class="footer-actions">
+    <button class="reset-btn" onclick="resetProfile()">↩ Reset profil aux valeurs par défaut</button>
+    <span class="hint">Chrome / Edge · USB · Config sauvegardée dans l'Arduino</span>
+  </div>
+</main>
+
+<!-- Overlay -->
+<div id="capture-overlay">
+  <div class="capture-modal">
+    <h2>Configurer ce bouton</h2>
+    <p class="sub">Choisissez entre une touche clavier ou une action média/système.</p>
+
+    <div class="capture-tabs">
+      <button class="capture-tab active" onclick="switchCaptureTab('keyboard')">⌨ Clavier</button>
+      <button class="capture-tab"        onclick="switchCaptureTab('consumer')">🔊 Média / Système</button>
+    </div>
+
+    <!-- Clavier -->
+    <div class="capture-panel active" id="panel-keyboard">
+      <div class="capture-display" id="capture-display">En attente…</div>
+      <div class="capture-hint">Maintenez Ctrl / Shift / Alt / ⌘ puis appuyez sur la touche</div>
+    </div>
+
+    <!-- Consumer -->
+    <div class="capture-panel" id="panel-consumer">
+      <div class="consumer-grid" id="consumer-grid"></div>
+    </div>
+
+    <button class="capture-cancel" onclick="cancelCapture()">Annuler</button>
+  </div>
+</div>
+
+<script>
+// =====================================================
+// KEYCODES — valeurs exactes de Keyboard.h Arduino
+// =====================================================
+
+// Modifiers HID-Project (KeyboardKeycode enum)
+const MOD = {
+  Control: 0xE0,  // KEY_LEFT_CTRL  dans HID-Project
+  Shift:   0xE1,  // KEY_LEFT_SHIFT
+  Alt:     0xE2,  // KEY_LEFT_ALT
+  Meta:    0xE3,  // KEY_LEFT_GUI (Cmd Mac / Win)
+};
+
+// Touches clavier → keycode HID-Project (USB HID Usage IDs)
+// Source : HID-Project KeyboardKeycode enum
+const KEY = {
+  // Lettres (HID Usage IDs : a=0x04, b=0x05 ...)
+  'a':0x04,'b':0x05,'c':0x06,'d':0x07,'e':0x08,'f':0x09,'g':0x0A,'h':0x0B,
+  'i':0x0C,'j':0x0D,'k':0x0E,'l':0x0F,'m':0x10,'n':0x11,'o':0x12,'p':0x13,
+  'q':0x14,'r':0x15,'s':0x16,'t':0x17,'u':0x18,'v':0x19,'w':0x1A,'x':0x1B,
+  'y':0x1C,'z':0x1D,
+  // Chiffres (1=0x1E ... 0=0x27)
+  '1':0x1E,'2':0x1F,'3':0x20,'4':0x21,'5':0x22,'6':0x23,'7':0x24,'8':0x25,'9':0x26,'0':0x27,
+  // Touches spéciales
+  'Enter':0x28, 'Escape':0x29, 'Backspace':0x2A, 'Tab':0x2B, ' ':0x2C, 'Space':0x2C,
+  'CapsLock':0x39,
+  'Delete':0x4C, 'Insert':0x49, 'Home':0x4A, 'End':0x4D,
+  'PageUp':0x4B, 'PageDown':0x4E,
+  'ArrowRight':0x4F, 'ArrowLeft':0x50, 'ArrowDown':0x51, 'ArrowUp':0x52,
+  // F1-F24
+  'F1':0x3A,'F2':0x3B,'F3':0x3C,'F4':0x3D,'F5':0x3E,'F6':0x3F,
+  'F7':0x40,'F8':0x41,'F9':0x42,'F10':0x43,'F11':0x44,'F12':0x45,
+  'F13':0x68,'F14':0x69,'F15':0x6A,'F16':0x6B,'F17':0x6C,'F18':0x6D,
+  'F19':0x6E,'F20':0x6F,'F21':0x70,'F22':0x71,'F23':0x72,'F24':0x73,
+  // Ponctuation
+  '-':0x2D,'=':0x2E,'[':0x2F,']':0x30,'\\':0x31,';':0x33,"'":0x34,'`':0x35,
+  ',':0x36,'.':0x37,'/':0x38,
+};
+
+// Consumer keys (HID Consumer Control, uint16_t)
+const CONSUMER = [
+  { name: '🔊 Volume +',      code: 0x00E9 },
+  { name: '🔉 Volume -',      code: 0x00EA },
+  { name: '🔇 Mute',          code: 0x00E2 },
+  { name: '⏯ Play/Pause',    code: 0x00CD },
+  { name: '⏭ Suivant',       code: 0x00B5 },
+  { name: '⏮ Précédent',     code: 0x00B6 },
+  { name: '☀ Lum. +',        code: 0x006F },
+  { name: '🌑 Lum. -',        code: 0x0070 },
+  { name: '⏹ Stop',          code: 0x00B7 },
+];
+
+const ACTION_KEY      = 0;
+const ACTION_CONSUMER = 1;
+
+// Valeurs par défaut : { type, m1, m2, k1, k2, label }
+function makeDefault(type, m1, m2, k1, k2, label) {
+  return { type, m1, m2, k1, k2, label };
+}
+
+const DEFAULTS = [
+  // Profil 1 — F13-F18 (keycodes HID-Project)
+  [
+    makeDefault(ACTION_KEY, 0, 0, 0x68, 0, 'F13'),
+    makeDefault(ACTION_KEY, 0, 0, 0x69, 0, 'F14'),
+    makeDefault(ACTION_KEY, 0, 0, 0x6A, 0, 'F15'),
+    makeDefault(ACTION_KEY, 0, 0, 0x6B, 0, 'F16'),
+    makeDefault(ACTION_KEY, 0, 0, 0x6C, 0, 'F17'),
+    makeDefault(ACTION_KEY, 0, 0, 0x6D, 0, 'F18'),
+    makeDefault(ACTION_KEY, 0, 0, 0x52, 0, '▲ ArrowUp'),
+    makeDefault(ACTION_KEY, 0, 0, 0x51, 0, '▼ ArrowDown'),
+  ],
+  // Profil 2 — F19-F24
+  [
+    makeDefault(ACTION_KEY, 0, 0, 0x6E, 0, 'F19'),
+    makeDefault(ACTION_KEY, 0, 0, 0x6F, 0, 'F20'),
+    makeDefault(ACTION_KEY, 0, 0, 0x70, 0, 'F21'),
+    makeDefault(ACTION_KEY, 0, 0, 0x71, 0, 'F22'),
+    makeDefault(ACTION_KEY, 0, 0, 0x72, 0, 'F23'),
+    makeDefault(ACTION_KEY, 0, 0, 0x73, 0, 'F24'),
+    makeDefault(ACTION_KEY, 0, 0, 0x52, 0, '▲ ArrowUp'),
+    makeDefault(ACTION_KEY, 0, 0, 0x51, 0, '▼ ArrowDown'),
+  ],
+];
+
+// =====================================================
+// État
+// =====================================================
+let port = null, writer = null, reader = null;
+let currentProfile = 0;
+let captureTarget = null;
+let pressedMods = new Set();
+let captureTabActive = 'keyboard';
+
+let config = DEFAULTS.map(p => p.map(a => ({ ...a })));
+
+// =====================================================
+// Utils
+// =====================================================
+function log(msg, type = 'info') {
+  const el = document.getElementById('log');
+  const d = document.createElement('div');
+  d.className = `log-line ${type}`;
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.prepend(d);
+}
+
+function setStatus(text, state = '') {
+  document.getElementById('status-text').textContent = text;
+  document.getElementById('status-dot').className = 'status-dot' + (state ? ` ${state}` : '');
+}
+
+function modSymbol(key) {
+  return { Control:'Ctrl', Shift:'⇧ Shift', Alt:'Alt', Meta:'⌘' }[key] || key;
+}
+
+function buildLabel(type, m1, m2, k1, k2, keyName) {
+  if (type === ACTION_CONSUMER) {
+    return CONSUMER.find(c => (c.code & 0xFF) === k1 && ((c.code >> 8) & 0xFF) === k2)?.name || 'Consumer';
+  }
+  const parts = [];
+  if (m1) parts.push(Object.entries(MOD).find(([,v]) => v === m1)?.[0] || '');
+  if (m2) parts.push(Object.entries(MOD).find(([,v]) => v === m2)?.[0] || '');
+  const modStr = parts.map(modSymbol).join('+');
+  return modStr ? `${modStr}+${keyName}` : keyName;
+}
+
+// =====================================================
+// WebSerial
+// =====================================================
+if (!('serial' in navigator)) {
+  document.getElementById('no-serial').style.display = 'block';
+  document.getElementById('connect-btn').disabled = true;
+}
+
+document.getElementById('connect-btn').addEventListener('click', async () => {
+  if (port) { await disconnect(); return; }
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 9600 });
+
+    const enc = new TextEncoderStream();
+    enc.readable.pipeTo(port.writable);
+    writer = enc.writable.getWriter();
+
+    const dec = new TextDecoderStream();
+    port.readable.pipeTo(dec.writable);
+    reader = dec.readable.getReader();
+
+    document.getElementById('connect-btn').textContent = '✕ Déconnecter';
+    document.getElementById('connect-btn').classList.add('connected');
+    setStatus('Connecté — macropad prêt', 'ok');
+    log('Port série ouvert à 9600 baud', 'ok');
+    readLoop();
+  } catch(e) {
+    log('Connexion annulée : ' + e.message, 'err');
+  }
+});
+
+async function disconnect() {
+  try {
+    if (reader) { await reader.cancel(); reader = null; }
+    if (writer) { await writer.close(); writer = null; }
+    if (port)   { await port.close(); port = null; }
+  } catch(e) {}
+  document.getElementById('connect-btn').textContent = '⚡ Connecter';
+  document.getElementById('connect-btn').classList.remove('connected');
+  setStatus('Non connecté', '');
+  log('Déconnecté', 'info');
+}
+
+async function readLoop() {
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      value.trim().split('\n').forEach(line => {
+        if (line.trim()) log('← ' + line.trim(), line.includes('OK') ? 'ok' : 'err');
+      });
+    }
+  } catch(e) {
+    if (port) log('Connexion perdue', 'err');
+  }
+}
+
+// Format : "CFG P B T M1 M2 K1 K2\n"
+async function sendConfig(profile, btnIndex, type, m1, m2, k1, k2) {
+  if (!writer) { log('⚠ Non connecté !', 'err'); return; }
+  const b = btnIndex <= 5 ? btnIndex : (btnIndex - 6 + 10);
+  const cmd = `CFG ${profile} ${b} ${type} ${m1} ${m2} ${k1} ${k2}\n`;
+  log('→ ' + cmd.trim(), 'info');
+  await writer.write(cmd);
+}
+
+// =====================================================
+// UI Render
+// =====================================================
+function switchProfile(p) {
+  currentProfile = p;
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === p));
+  renderGrid();
+}
+
+function makeCard(title, index, cfg) {
+  const card = document.createElement('div');
+  card.className = 'key-card';
+  card.innerHTML = `
+    <div class="key-label">
+      <span class="key-number">${title}</span>
+      <span class="key-preview">${cfg.label || '—'}</span>
+    </div>
+    <button class="key-capture-btn">🎯 Configurer</button>
+  `;
+  card.querySelector('.key-capture-btn').addEventListener('click', () => startCapture(index));
+  return card;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('buttons-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 6; i++) grid.appendChild(makeCard(`BTN ${i+1}`, i, config[currentProfile][i]));
+
+  const enc = document.getElementById('encoder-row');
+  enc.innerHTML = '';
+  enc.appendChild(makeCard('◀ Rotation gauche', 6, config[currentProfile][6]));
+  enc.appendChild(makeCard('▶ Rotation droite', 7, config[currentProfile][7]));
+}
+
+// =====================================================
+// Capture
+// =====================================================
+function startCapture(index) {
+  captureTarget = { profile: currentProfile, index };
+  pressedMods = new Set();
+  document.getElementById('capture-display').textContent = 'En attente…';
+  switchCaptureTab('keyboard');
+  buildConsumerGrid();
+  document.getElementById('capture-overlay').classList.add('active');
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('keyup',   onKeyUp);
+}
+
+function cancelCapture() {
+  captureTarget = null;
+  document.getElementById('capture-overlay').classList.remove('active');
+  document.removeEventListener('keydown', onKeyDown);
+  document.removeEventListener('keyup',   onKeyUp);
+}
+
+function switchCaptureTab(tab) {
+  captureTabActive = tab;
+  document.querySelectorAll('.capture-tab').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'keyboard') || (i === 1 && tab === 'consumer'));
+  });
+  document.getElementById('panel-keyboard').classList.toggle('active', tab === 'keyboard');
+  document.getElementById('panel-consumer').classList.toggle('active', tab === 'consumer');
+  if (tab === 'keyboard') {
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup',   onKeyUp);
+  } else {
+    document.removeEventListener('keydown', onKeyDown);
+    document.removeEventListener('keyup',   onKeyUp);
+  }
+}
+
+function buildConsumerGrid() {
+  const grid = document.getElementById('consumer-grid');
+  grid.innerHTML = '';
+  CONSUMER.forEach(ck => {
+    const btn = document.createElement('button');
+    btn.className = 'consumer-btn';
+    btn.textContent = ck.name;
+    btn.addEventListener('click', () => applyConsumer(ck));
+    grid.appendChild(btn);
+  });
+}
+
+function applyConsumer(ck) {
+  const k1 = ck.code & 0xFF;
+  const k2 = (ck.code >> 8) & 0xFF;
+  const { profile, index } = captureTarget;
+  config[profile][index] = { type: ACTION_CONSUMER, m1: 0, m2: 0, k1, k2, label: ck.name };
+  sendConfig(profile, index, ACTION_CONSUMER, 0, 0, k1, k2);
+  cancelCapture();
+  renderGrid();
+}
+
+// Conversion e.code → keycode HID-Project
+// e.code donne la POSITION PHYSIQUE de la touche, indépendamment de la disposition clavier
+// Ça résout le problème AZERTY/QWERTY : Z physique = KeyZ partout
+const CODE_TO_HID = {
+  // Lettres — position physique identique sur AZERTY et QWERTY
+  'KeyA':0x04,'KeyB':0x05,'KeyC':0x06,'KeyD':0x07,'KeyE':0x08,'KeyF':0x09,
+  'KeyG':0x0A,'KeyH':0x0B,'KeyI':0x0C,'KeyJ':0x0D,'KeyK':0x0E,'KeyL':0x0F,
+  'KeyM':0x10,'KeyN':0x11,'KeyO':0x12,'KeyP':0x13,'KeyQ':0x14,'KeyR':0x15,
+  'KeyS':0x16,'KeyT':0x17,'KeyU':0x18,'KeyV':0x19,'KeyW':0x1A,'KeyX':0x1B,
+  'KeyY':0x1C,'KeyZ':0x1D,
+  // Chiffres
+  'Digit1':0x1E,'Digit2':0x1F,'Digit3':0x20,'Digit4':0x21,'Digit5':0x22,
+  'Digit6':0x23,'Digit7':0x24,'Digit8':0x25,'Digit9':0x26,'Digit0':0x27,
+  // Touches spéciales
+  'Enter':0x28,'NumpadEnter':0x58,'Escape':0x29,'Backspace':0x2A,'Tab':0x2B,'Space':0x2C,
+  'Delete':0x4C,'Insert':0x49,'Home':0x4A,'End':0x4D,'PageUp':0x4B,'PageDown':0x4E,
+  'ArrowRight':0x4F,'ArrowLeft':0x50,'ArrowDown':0x51,'ArrowUp':0x52,
+  'CapsLock':0x39,
+  // Ponctuation (positions QWERTY — l'Arduino envoie la position, l'OS interprète)
+  'Minus':0x2D,'Equal':0x2E,'BracketLeft':0x2F,'BracketRight':0x30,
+  'Backslash':0x31,'Semicolon':0x33,'Quote':0x34,'Backquote':0x35,
+  'Comma':0x36,'Period':0x37,'Slash':0x38,
+  // F1-F24
+  'F1':0x3A,'F2':0x3B,'F3':0x3C,'F4':0x3D,'F5':0x3E,'F6':0x3F,
+  'F7':0x40,'F8':0x41,'F9':0x42,'F10':0x43,'F11':0x44,'F12':0x45,
+  'F13':0x68,'F14':0x69,'F15':0x6A,'F16':0x6B,'F17':0x6C,'F18':0x6D,
+  'F19':0x6E,'F20':0x6F,'F21':0x70,'F22':0x71,'F23':0x72,'F24':0x73,
+};
+
+// Label lisible pour une touche (ce qu'on affiche à l'utilisateur)
+// On utilise e.key pour l'affichage (montre le vrai caractère), e.code pour le HID
+function getDisplayName(e) {
+  if (e.key.length === 1) return e.key.toUpperCase();
+  return e.key; // Enter, Escape, ArrowUp, etc.
+}
+
+function onKeyDown(e) {
+  e.preventDefault();
+
+  // Modifiers — détectés via e.key (Control, Shift, Alt, Meta sont identiques partout)
+  if (MOD[e.key] !== undefined) {
+    pressedMods.add(e.key);
+    const display = [...pressedMods].map(modSymbol).join(' + ');
+    document.getElementById('capture-display').textContent = display + ' + …';
+    return;
+  }
+
+  // Touche principale — on utilise e.code pour la position physique (fix AZERTY)
+  const k1 = CODE_TO_HID[e.code] ?? null;
+
+  if (!k1) {
+    document.getElementById('capture-display').textContent = `Non supporté : "${e.key}" (${e.code})`;
+    return;
+  }
+
+  // Jusqu'à 2 modifiers
+  const mods = [...pressedMods];
+  const m1 = mods.length >= 1 ? (MOD[mods[0]] ?? 0) : 0;
+  const m2 = mods.length >= 2 ? (MOD[mods[1]] ?? 0) : 0;
+
+  const displayName = getDisplayName(e);
+  const label = buildLabel(ACTION_KEY, m1, m2, k1, 0, displayName);
+
+  const { profile, index } = captureTarget;
+  config[profile][index] = { type: ACTION_KEY, m1, m2, k1, k2: 0, label };
+  sendConfig(profile, index, ACTION_KEY, m1, m2, k1, 0);
+
+  document.getElementById('capture-display').textContent = '✓ ' + label;
+  setTimeout(() => { cancelCapture(); renderGrid(); }, 600);
+}
+
+function onKeyUp(e) { pressedMods.delete(e.key); }
+
+// =====================================================
+// Reset
+// =====================================================
+async function resetProfile() {
+  const p = currentProfile;
+  config[p] = DEFAULTS[p].map(a => ({ ...a }));
+  for (let i = 0; i < 8; i++) {
+    const c = config[p][i];
+    await sendConfig(p, i, c.type, c.m1, c.m2, c.k1, c.k2);
+    await new Promise(r => setTimeout(r, 120));
+  }
+  renderGrid();
+  log(`Profil ${p+1} réinitialisé aux valeurs par défaut`, 'ok');
+}
+
+// =====================================================
+// Init
+// =====================================================
+renderGrid();
+</script>
+</body>
+</html>
