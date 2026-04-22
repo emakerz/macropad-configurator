@@ -11,7 +11,7 @@ Projet présenté sur la chaîne YouTube **[Enzo Emakerz](https://www.youtube.co
 |---|---|
 | 🌐 **Interface de configuration** | [emakerz.github.io/macropad-configurator](https://emakerz.github.io/macropad-configurator) |
 | 📺 **Vidéo YouTube** | *(lien à venir)* |
-| 📦 **Code Arduino (.ino)** | [Télécharger macropad_v4.ino](https://github.com/emakerz/macropad-configurator/raw/main/macropad_v4.ino) |
+| 📦 **Code Arduino (.ino)** | [Télécharger macropad_v4.ino](https://github.com/emakerz/macropad-configurator/raw/main/macropad.ino) |
 
 ---
 
