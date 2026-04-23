@@ -128,4 +128,4 @@ Chaque bouton occupe des cases fixes dans cette mémoire. Quand tu modifies un b
 ## 📄 Licence
 
 Projet open-source — libre d'utilisation et de modification.  
-Si tu l'utilises dans une vidéo ou un projet, un crédit vers la chaîne [eMakerz](https://www.youtube.com/@emakerz) est apprécié 🙏
+Si tu l'utilises dans une vidéo ou un projet, un crédit vers la chaîne [Enzo Emakerz](https://www.youtube.com/@emakerz) est apprécié 🙏
