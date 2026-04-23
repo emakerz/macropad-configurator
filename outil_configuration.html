@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macropad Configurator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080e1a; --bg2:#0d1526; --bg3:#111d35;
+  --blue:#3b82f6; --blue-dim:rgba(59,130,246,0.12); --blue-glow:rgba(59,130,246,0.25);
+  --blue-brt:#60a5fa; --white:#f0f6ff; --dim:#4a6080;
+  --border:rgba(59,130,246,0.18); --border2:rgba(59,130,246,0.35);
+  --green:#22d3a0; --red:#f87171;
+  --mono:'DM Mono',monospace; --sans:'Outfit',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--white);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 20% 10%,rgba(59,130,246,0.07) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 80% 90%,rgba(34,211,160,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;}
+header{width:100%;max-width:860px;padding:36px 24px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:relative;z-index:1;}
+.logo-tag{font-family:var(--mono);font-size:10px;color:var(--blue-brt);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:5px;opacity:0.7;}
+h1{font-family:var(--sans);font-size:clamp(20px,3.5vw,30px);font-weight:800;letter-spacing:-0.01em;color:var(--white);}
+h1 em{font-style:normal;color:var(--blue-brt);}
+.by-line{font-family:var(--sans);font-size:13px;color:rgba(255,255,255,0.55);letter-spacing:0.02em;margin-top:5px;font-weight:400;}
+.by-line span{color:#fff;font-weight:600;}
+#connect-btn{background:var(--blue);color:#fff;border:none;padding:11px 22px;border-radius:8px;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.08em;cursor:pointer;transition:all 0.2s;white-space:nowrap;flex-shrink:0;text-transform:uppercase;}
+#connect-btn:hover{background:#2563eb;transform:translateY(-1px);}
+#connect-btn.connected{background:#059669;}
+#connect-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+.status-bar{width:100%;max-width:860px;padding:0 24px 12px;position:relative;z-index:1;}
+.status-pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--dim);padding:5px 14px;background:var(--bg2);border-radius:100px;border:1px solid var(--border);}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all 0.3s;}
+.status-dot.ok{background:var(--green);box-shadow:0 0 8px var(--green);}
+.status-dot.err{background:var(--red);}
+main{width:100%;max-width:860px;padding:0 24px;display:flex;flex-direction:column;gap:20px;position:relative;z-index:1;}
+.controls-row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;}
+.ctrl-group{display:flex;flex-direction:column;gap:6px;}
+.ctrl-label{font-family:var(--mono);font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--dim);}
+.seg{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px;}
+.seg-btn{background:none;border:none;color:var(--dim);font-family:var(--mono);font-size:11px;font-weight:500;padding:7px 16px;border-radius:6px;cursor:pointer;transition:all 0.15s;letter-spacing:0.06em;text-transform:uppercase;}
+.seg-btn.active{background:var(--blue);color:#fff;}
+.seg-btn:not(.active):hover{color:var(--white);background:rgba(255,255,255,0.04);}
+.pcb-wrapper{display:flex;justify-content:center;}
+.pcb{background:var(--bg2);border:1px solid rgba(255,255,255,0.18);border-radius:20px;padding:32px 36px 36px;width:440px;position:relative;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 20px 60px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.08);}
+.pcb::before{content:'';position:absolute;inset:8px;border-radius:14px;border:1px solid rgba(255,255,255,0.07);pointer-events:none;}
+.pcb-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;gap:12px;}
+.oled-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.oled{width:100px;height:52px;background:#060c10;border-radius:5px;border:1px solid #1a2a3a;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 12px rgba(0,0,0,0.8);}
+.oled-inner{text-align:center;font-family:var(--mono);font-size:9px;line-height:1.4;color:#38bdf8;text-shadow:0 0 6px rgba(56,189,248,0.6);letter-spacing:0.08em;}
+.oled-profile-num{font-size:22px;font-weight:500;display:block;line-height:1;margin-top:2px;}
+.oled-label{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.15em;text-transform:uppercase;}
+.enc-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.enc-dial{width:68px;height:68px;border-radius:50%;background:linear-gradient(145deg,#1e2d4a,#0d1526);border:2px solid #1e3050;box-shadow:0 4px 16px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;position:relative;}
+.enc-dial::after{content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);width:4px;height:12px;background:var(--blue-brt);border-radius:2px;opacity:0.8;}
+.enc-dot{width:18px;height:18px;border-radius:50%;background:#0d1526;border:1px solid #1e3050;}
+.enc-btns{display:flex;gap:6px;}
+.enc-btn{background:var(--bg3);border:1px solid var(--border);color:var(--dim);font-family:var(--mono);font-size:10px;padding:5px 10px;border-radius:6px;cursor:pointer;transition:all 0.15s;letter-spacing:0.04em;}
+.enc-btn:hover,.enc-btn.configured{border-color:var(--blue);color:var(--blue-brt);background:var(--blue-dim);}
+.enc-sublabel{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.12em;text-transform:uppercase;text-align:center;}
+.sw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.sw-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.sw{width:80px;height:80px;background:var(--bg3);border-radius:10px;border:1px solid rgba(255,255,255,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:all 0.15s;box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.08);}
+.sw:hover{border-color:rgba(255,255,255,0.4);background:#13203d;box-shadow:0 4px 16px rgba(0,0,0,0.4),0 0 0 2px var(--blue-dim);transform:translateY(-1px);}
+.sw.configured{border-color:rgba(255,255,255,0.3);background:#0d1c38;}
+.sw-cap{width:44px;height:40px;border-radius:6px;background:var(--bg2);border:1px solid rgba(255,255,255,0.04);flex-shrink:0;}
+.sw-keylabel{font-family:var(--mono);font-size:9px;color:var(--dim);text-align:center;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.03em;line-height:1.3;}
+.sw-assignlabel{font-family:var(--mono);font-size:9px;color:var(--white);text-align:center;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.03em;line-height:1.3;margin-top:4px;}
+.sw.configured .sw-keylabel{color:var(--blue-brt);}
+.sw.configured .sw-assignlabel{color:#fff;font-weight:500;}
+.sw-num{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,0.45);letter-spacing:0.12em;text-transform:uppercase;}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.panel-title{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;}
+.log-box{font-family:var(--mono);font-size:10px;color:var(--dim);height:80px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:2px;line-height:1.7;}
+.log-line.ok{color:var(--green);} .log-line.err{color:var(--red);} .log-line.info{color:var(--blue-brt);}
+.action-btn{background:none;border:1px solid var(--border);color:var(--dim);font-family:var(--mono);font-size:10px;padding:8px 16px;border-radius:6px;cursor:pointer;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.06em;}
+.action-btn:hover{border-color:var(--red);color:var(--red);}
+.panel-hint{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.7;margin-top:10px;}
+#no-serial{display:none;background:rgba(248,113,113,0.08);border:1px solid var(--red);color:var(--red);font-family:var(--mono);font-size:11px;padding:12px 16px;border-radius:8px;line-height:1.7;}
+#capture-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+#capture-overlay.active{display:flex;}
+.capture-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:36px 44px;text-align:center;max-width:440px;width:90%;box-shadow:0 0 60px rgba(59,130,246,0.12);}
+.capture-modal h2{font-family:var(--sans);font-size:18px;font-weight:800;color:var(--white);margin-bottom:6px;letter-spacing:-0.01em;}
+.capture-sub{color:var(--dim);font-size:13px;margin-bottom:20px;line-height:1.6;}
+.cap-tabs{display:flex;gap:4px;background:var(--bg3);padding:3px;border-radius:8px;margin-bottom:20px;}
+.cap-tab{flex:1;background:none;border:none;color:var(--dim);font-family:var(--mono);font-size:11px;padding:8px;border-radius:6px;cursor:pointer;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.06em;}
+.cap-tab.active{background:var(--blue);color:#fff;}
+.cap-panel{display:none;} .cap-panel.active{display:block;}
+.cap-display{font-family:var(--mono);font-size:22px;color:var(--blue-brt);min-height:48px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;letter-spacing:0.04em;}
+.cap-hint{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0.05em;}
+.consumer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.consumer-btn{background:var(--bg3);border:1px solid var(--border);color:var(--white);font-family:var(--mono);font-size:10px;padding:10px 4px;border-radius:6px;cursor:pointer;transition:all 0.15s;text-align:center;line-height:1.5;}
+.consumer-btn:hover{border-color:var(--blue);color:var(--blue-brt);background:var(--blue-dim);}
+.cap-cancel{background:none;border:1px solid var(--border);color:var(--dim);font-family:var(--mono);font-size:11px;padding:9px 24px;border-radius:8px;cursor:pointer;transition:all 0.15s;margin-top:18px;text-transform:uppercase;letter-spacing:0.06em;}
+.cap-cancel:hover{border-color:var(--red);color:var(--red);}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="logo-tag">// WebSerial Configurator</div>
+    <h1>Macro<em>pad</em></h1>
+    <div class="by-line">by <span>Enzo Emakerz</span></div>
+  </div>
+  <button id="connect-btn">⚡ Connecter</button>
+</header>
+<div class="status-bar">
+  <div class="status-pill">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">Non connecté — branchez votre macropad en USB</span>
+  </div>
+</div>
+<main>
+  <div id="no-serial">⚠ WebSerial non supporté. Utilisez <strong>Chrome</strong> ou <strong>Edge</strong>.</div>
+  <div class="controls-row">
+    <div class="ctrl-group">
+      <div class="ctrl-label">Carte</div>
+      <div class="seg">
+        <button class="seg-btn active" onclick="selectBoard('promicro')">Pro Micro</button>
+        <button class="seg-btn" onclick="selectBoard('xiao')">XIAO RP2040</button>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <div class="ctrl-label">Profil</div>
+      <div class="seg" id="profile-seg">
+        <button class="seg-btn active" onclick="switchProfile(0)">01</button>
+        <button class="seg-btn" onclick="switchProfile(1)">02</button>
+        <button class="seg-btn" onclick="switchProfile(2)">03</button>
+        <button class="seg-btn" onclick="switchProfile(3)">04</button>
+      </div>
+    </div>
+  </div>
+  <div class="pcb-wrapper">
+    <div class="pcb">
+      <div class="pcb-top">
+        <div class="oled-wrap">
+          <div class="oled">
+            <div class="oled-inner">PROFIL<span class="oled-profile-num" id="oled-num">1</span></div>
+          </div>
+          <div class="oled-label">OLED 128×64</div>
+        </div>
+        <div class="enc-wrap">
+          <div class="enc-dial"><div class="enc-dot"></div></div>
+          <div class="enc-btns">
+            <button class="enc-btn" id="enc-left-btn" onclick="startCapture(6)">◀ Gauche</button>
+            <button class="enc-btn" id="enc-right-btn" onclick="startCapture(7)">Droite ▶</button>
+          </div>
+          <div class="enc-sublabel">Encodeur rotatif</div>
+        </div>
+      </div>
+      <div class="sw-grid" id="sw-grid"></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="panel">
+      <div class="panel-title">Log série</div>
+      <div class="log-box" id="log"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Actions</div>
+      <button class="action-btn" onclick="resetProfile()">↩ Reset profil</button>
+      <div class="panel-hint">Config sauvegardée dans l'Arduino.<br>Chrome / Edge uniquement.</div>
+    </div>
+  </div>
+</main>
+<div id="capture-overlay">
+  <div class="capture-modal">
+    <h2>Configurer ce bouton</h2>
+    <p class="capture-sub">Choisissez une touche clavier ou une action média.</p>
+    <div class="cap-tabs">
+      <button class="cap-tab active" onclick="switchCaptureTab('keyboard')">⌨ Clavier</button>
+      <button class="cap-tab" onclick="switchCaptureTab('consumer')">🔊 Média</button>
+    </div>
+    <div class="cap-panel active" id="panel-keyboard">
+      <div class="cap-display" id="capture-display">En attente…</div>
+      <div class="cap-hint">Maintenez Ctrl / Shift / Alt / ⌘ puis appuyez sur la touche</div>
+    </div>
+    <div class="cap-panel" id="panel-consumer">
+      <div class="consumer-grid" id="consumer-grid"></div>
+    </div>
+    <button class="cap-cancel" onclick="cancelCapture()">Annuler</button>
+  </div>
+</div>
+<script>
+const MOD={Control:0xE0,Shift:0xE1,Alt:0xE2,Meta:0xE3};
+const CONSUMER=[
+  {name:'🔊 Volume +',code:0x00E9},{name:'🔉 Volume -',code:0x00EA},{name:'🔇 Mute',code:0x00E2},
+  {name:'⏯ Play/Pause',code:0x00CD},{name:'⏭ Suivant',code:0x00B5},{name:'⏮ Précédent',code:0x00B6},
+  {name:'☀ Lum. +',code:0x006F},{name:'🌑 Lum. -',code:0x0070},{name:'⏹ Stop',code:0x00B7},
+];
+const CODE_TO_HID={
+  'KeyA':0x04,'KeyB':0x05,'KeyC':0x06,'KeyD':0x07,'KeyE':0x08,'KeyF':0x09,'KeyG':0x0A,'KeyH':0x0B,
+  'KeyI':0x0C,'KeyJ':0x0D,'KeyK':0x0E,'KeyL':0x0F,'KeyM':0x10,'KeyN':0x11,'KeyO':0x12,'KeyP':0x13,
+  'KeyQ':0x14,'KeyR':0x15,'KeyS':0x16,'KeyT':0x17,'KeyU':0x18,'KeyV':0x19,'KeyW':0x1A,'KeyX':0x1B,
+  'KeyY':0x1C,'KeyZ':0x1D,
+  'Digit1':0x1E,'Digit2':0x1F,'Digit3':0x20,'Digit4':0x21,'Digit5':0x22,
+  'Digit6':0x23,'Digit7':0x24,'Digit8':0x25,'Digit9':0x26,'Digit0':0x27,
+  'Enter':0x28,'NumpadEnter':0x58,'Escape':0x29,'Backspace':0x2A,'Tab':0x2B,'Space':0x2C,
+  'Delete':0x4C,'Insert':0x49,'Home':0x4A,'End':0x4D,'PageUp':0x4B,'PageDown':0x4E,
+  'ArrowRight':0x4F,'ArrowLeft':0x50,'ArrowDown':0x51,'ArrowUp':0x52,'CapsLock':0x39,
+  'Minus':0x2D,'Equal':0x2E,'BracketLeft':0x2F,'BracketRight':0x30,'Backslash':0x31,
+  'Semicolon':0x33,'Quote':0x34,'Backquote':0x35,'Comma':0x36,'Period':0x37,'Slash':0x38,
+  'F1':0x3A,'F2':0x3B,'F3':0x3C,'F4':0x3D,'F5':0x3E,'F6':0x3F,
+  'F7':0x40,'F8':0x41,'F9':0x42,'F10':0x43,'F11':0x44,'F12':0x45,
+  'F13':0x68,'F14':0x69,'F15':0x6A,'F16':0x6B,'F17':0x6C,'F18':0x6D,
+  'F19':0x6E,'F20':0x6F,'F21':0x70,'F22':0x71,'F23':0x72,'F24':0x73,
+};
+const ACTION_KEY=0,ACTION_CONSUMER=1;
+function mk(type,m1,m2,k1,k2,label){return{type,m1,m2,k1,k2,label};}
+function emptyP(){return[mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(ACTION_KEY,0,0,0x52,0,'▲ Up'),mk(ACTION_KEY,0,0,0x51,0,'▼ Down')];}
+const DEFAULTS=[emptyP(),emptyP(),emptyP(),emptyP()];
+let port=null,writer=null,reader=null,currentProfile=0,currentBoard='promicro',captureTarget=null,pressedMods=new Set();
+let config=DEFAULTS.map(p=>p.map(a=>({...a})));
+function log(msg,type='info'){const el=document.getElementById('log');const d=document.createElement('div');d.className=`log-line ${type}`;d.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;el.prepend(d);}
+function setStatus(t,s=''){document.getElementById('status-text').textContent=t;document.getElementById('status-dot').className='status-dot'+(s?` ${s}`:'');}
+function modSym(k){return{Control:'Ctrl',Shift:'⇧',Alt:'Alt',Meta:'⌘'}[k]||k;}
+function buildLabel(type,m1,m2,k1,k2,kn){
+  if(type===ACTION_CONSUMER)return CONSUMER.find(c=>(c.code&0xFF)===k1&&((c.code>>8)&0xFF)===k2)?.name||'Consumer';
+  const p=[];if(m1)p.push(Object.entries(MOD).find(([,v])=>v===m1)?.[0]||'');if(m2)p.push(Object.entries(MOD).find(([,v])=>v===m2)?.[0]||'');
+  const ms=p.map(modSym).join('+');return ms?`${ms}+${kn}`:kn;
+}
+if(!('serial' in navigator)){document.getElementById('no-serial').style.display='block';document.getElementById('connect-btn').disabled=true;}
+document.getElementById('connect-btn').addEventListener('click',async()=>{
+  if(port){await disconnect();return;}
+  try{
+    port=await navigator.serial.requestPort();await port.open({baudRate:9600});
+    const enc=new TextEncoderStream();enc.readable.pipeTo(port.writable);writer=enc.writable.getWriter();
+    const dec=new TextDecoderStream();port.readable.pipeTo(dec.writable);reader=dec.readable.getReader();
+    document.getElementById('connect-btn').textContent='✕ Déconnecter';
+    document.getElementById('connect-btn').classList.add('connected');
+    setStatus('Connecté — macropad prêt','ok');log('Port série ouvert','ok');readLoop();
+  }catch(e){log('Connexion annulée : '+e.message,'err');}
+});
+async function disconnect(){
+  try{if(reader){await reader.cancel();reader=null;}if(writer){await writer.close();writer=null;}if(port){await port.close();port=null;}}catch(e){}
+  document.getElementById('connect-btn').textContent='⚡ Connecter';
+  document.getElementById('connect-btn').classList.remove('connected');
+  setStatus('Non connecté','');log('Déconnecté','info');
+}
+async function readLoop(){
+  try{while(true){const{value,done}=await reader.read();if(done)break;value.trim().split('\n').forEach(l=>{if(l.trim())log('← '+l.trim(),l.includes('OK')?'ok':'err');});}}
+  catch(e){if(port)log('Connexion perdue','err');}
+}
+async function sendConfig(profile,btnIndex,type,m1,m2,k1,k2){
+  if(!writer){log('⚠ Non connecté !','err');return;}
+  const b=btnIndex<=5?btnIndex:(btnIndex-6+10);
+  const cmd=`CFG ${profile} ${b} ${type} ${m1} ${m2} ${k1} ${k2}\n`;
+  log('→ '+cmd.trim(),'info');await writer.write(cmd);
+}
+function switchProfile(p){
+  currentProfile=p;
+  document.querySelectorAll('#profile-seg .seg-btn').forEach((b,i)=>b.classList.toggle('active',i===p));
+  document.getElementById('oled-num').textContent=p+1;
+  renderPCB();
+}
+function selectBoard(board){
+  currentBoard=board;
+  document.querySelectorAll('.controls-row .ctrl-group:first-child .seg-btn').forEach((b,i)=>b.classList.toggle('active',i===(board==='promicro'?0:1)));
+  log(`Carte : ${board==='promicro'?'Arduino Pro Micro':'Seeed XIAO RP2040'}`,'info');
+}
+function renderPCB(){
+  const grid=document.getElementById('sw-grid');grid.innerHTML='';
+  for(let i=0;i<6;i++){
+    const cfg=config[currentProfile][i];const ok=cfg.k1!==0 || cfg.type===ACTION_CONSUMER;
+    const wrap=document.createElement('div');wrap.className='sw-wrap';
+    const sw=document.createElement('div');sw.className='sw'+(ok?' configured':'');
+    sw.innerHTML=`<div class="sw-cap"></div>${ok?`<div class="sw-assignlabel">${cfg.label}</div>`:''}`;
+    sw.addEventListener('click',()=>startCapture(i));
+    const num=document.createElement('div');num.className='sw-num';num.textContent=`BTN ${i+1}`;
+    wrap.append(sw,num);grid.appendChild(wrap);
+  }
+  const lc=config[currentProfile][6],rc=config[currentProfile][7];
+  document.getElementById('enc-left-btn').classList.toggle('configured',lc.type!==0);
+  document.getElementById('enc-right-btn').classList.toggle('configured',rc.type!==0);
+}
+function startCapture(index){
+  captureTarget={profile:currentProfile,index};pressedMods=new Set();
+  document.getElementById('capture-display').textContent='En attente…';
+  switchCaptureTab('keyboard');buildConsumerGrid();
+  document.getElementById('capture-overlay').classList.add('active');
+  document.addEventListener('keydown',onKeyDown);document.addEventListener('keyup',onKeyUp);
+}
+function cancelCapture(){
+  captureTarget=null;document.getElementById('capture-overlay').classList.remove('active');
+  document.removeEventListener('keydown',onKeyDown);document.removeEventListener('keyup',onKeyUp);
+}
+function switchCaptureTab(tab){
+  document.querySelectorAll('.cap-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&tab==='keyboard')||(i===1&&tab==='consumer')));
+  document.getElementById('panel-keyboard').classList.toggle('active',tab==='keyboard');
+  document.getElementById('panel-consumer').classList.toggle('active',tab==='consumer');
+  if(tab==='keyboard'){document.addEventListener('keydown',onKeyDown);document.addEventListener('keyup',onKeyUp);}
+  else{document.removeEventListener('keydown',onKeyDown);document.removeEventListener('keyup',onKeyUp);}
+}
+function buildConsumerGrid(){
+  const g=document.getElementById('consumer-grid');g.innerHTML='';
+  CONSUMER.forEach(ck=>{const b=document.createElement('button');b.className='consumer-btn';b.textContent=ck.name;b.addEventListener('click',()=>applyConsumer(ck));g.appendChild(b);});
+}
+function applyConsumer(ck){
+  const k1=ck.code&0xFF,k2=(ck.code>>8)&0xFF;const{profile,index}=captureTarget;
+  config[profile][index]={type:ACTION_CONSUMER,m1:0,m2:0,k1,k2,label:ck.name};
+  sendConfig(profile,index,ACTION_CONSUMER,0,0,k1,k2);cancelCapture();renderPCB();
+}
+function onKeyDown(e){
+  e.preventDefault();
+  if(MOD[e.key]!==undefined){pressedMods.add(e.key);document.getElementById('capture-display').textContent=[...pressedMods].map(modSym).join(' + ')+' + …';return;}
+  const k1=CODE_TO_HID[e.code]??null;
+  if(!k1){document.getElementById('capture-display').textContent=`Non supporté : "${e.key}"`;return;}
+  const mods=[...pressedMods];const m1=mods.length>=1?(MOD[mods[0]]??0):0;const m2=mods.length>=2?(MOD[mods[1]]??0):0;
+  const dn=e.key.length===1?e.key.toUpperCase():e.key;const label=buildLabel(ACTION_KEY,m1,m2,k1,0,dn);
+  const{profile,index}=captureTarget;config[profile][index]={type:ACTION_KEY,m1,m2,k1,k2:0,label};
+  sendConfig(profile,index,ACTION_KEY,m1,m2,k1,0);
+  document.getElementById('capture-display').textContent='✓ '+label;
+  setTimeout(()=>{cancelCapture();renderPCB();},600);
+}
+function onKeyUp(e){pressedMods.delete(e.key);}
+async function resetProfile(){
+  const p=currentProfile;config[p]=DEFAULTS[p].map(a=>({...a}));
+  for(let i=0;i<8;i++){const c=config[p][i];await sendConfig(p,i,c.type,c.m1,c.m2,c.k1,c.k2);await new Promise(r=>setTimeout(r,120));}
+  renderPCB();log(`Profil ${p+1} réinitialisé`,'ok');
+}
+renderPCB();
+</script>
+</body>
+</html>
