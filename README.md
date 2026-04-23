@@ -19,9 +19,9 @@ Projet présenté sur la chaîne YouTube **[Enzo Emakerz](https://www.youtube.co
 ## 🧰 Matériel nécessaire
 
 - Arduino Pro Micro (ATmega32U4) **ou** Seeed XIAO RP2040
-- 6 switches mécaniques
-- 1 encodeur rotatif avec bouton
-- Écran OLED SSD1306 128×64 (I2C)
+- 6 switches mécaniques : https://s.click.aliexpress.com/e/_c4XaSZ0x
+- 1 encodeur rotatif avec bouton : https://s.click.aliexpress.com/e/_c3mJzTl5
+- Écran OLED SSD1306 128×64 (I2C) : https://fr.aliexpress.com/item/1005006141235306.html?spm=a2g0o.order_list.order_list_main.4.74155e5beo7Ff4&gatewayAdapt=glo2fra
 
 ---
 
