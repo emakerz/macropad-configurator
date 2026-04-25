@@ -2,7 +2,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Keyboard.h>
-#include <ConsumerKeyboard.h>
 #include <EEPROM.h>
 
 // =========================
@@ -19,10 +18,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // Pins XIAO RP2040
 // =========================
 const uint8_t switchPins[6] = {0, 28, 1, 29, 27, 26};
-const uint8_t ENC_PIN_A = 4;   // CLK
-const uint8_t ENC_PIN_B = 3;   // DT
-const uint8_t ENC_BTN   = 2;   // Bouton encodeur
-// OLED : SDA=6, SCL=7 (Wire par défaut sur XIAO RP2040)
+const uint8_t ENC_PIN_A = 4;
+const uint8_t ENC_PIN_B = 3;
+const uint8_t ENC_BTN   = 2;
 
 // =========================
 // Parametres
@@ -38,7 +36,6 @@ const unsigned long DEBOUNCE_MS    = 25;
 #define ACTION_KEY      1
 #define ACTION_CONSUMER 2
 
-// Modifiers — même valeurs USB HID standard que Pro Micro
 #define MOD_NONE  0x00
 #define MOD_CTRL  0xE0
 #define MOD_SHIFT 0xE1
@@ -54,12 +51,10 @@ struct KeyAction {
 };
 
 // =========================
-// EEPROM Layout — identique Pro Micro
-// 4 profils × 8 actions × 5 octets = 160 octets
-// Magic : addr 160
+// EEPROM
 // =========================
 #define EEPROM_MAGIC_ADDR 160
-#define EEPROM_MAGIC_VAL  0xF2
+#define EEPROM_MAGIC_VAL  0xF3
 
 KeyAction config[NUM_PROFILES][6];
 KeyAction encConfig[NUM_PROFILES][2];
@@ -68,14 +63,14 @@ void loadDefaults() {
   for (int p = 0; p < NUM_PROFILES; p++) {
     for (int b = 0; b < 6; b++)
       config[p][b] = {ACTION_NONE, 0, 0, 0, 0};
-    encConfig[p][0] = {ACTION_KEY, MOD_NONE, MOD_NONE, 0x52, 0}; // ArrowUp
-    encConfig[p][1] = {ACTION_KEY, MOD_NONE, MOD_NONE, 0x51, 0}; // ArrowDown
+    encConfig[p][0] = {ACTION_KEY, MOD_NONE, MOD_NONE, KEY_UP_ARROW,   0};
+    encConfig[p][1] = {ACTION_KEY, MOD_NONE, MOD_NONE, KEY_DOWN_ARROW, 0};
   }
 }
 
 void saveToEEPROM() {
   int addr = 0;
-  for (int p = 0; p < NUM_PROFILES; p++) {
+  for (int p = 0; p < NUM_PROFILES; p++)
     for (int b = 0; b < 6; b++) {
       EEPROM.update(addr++, config[p][b].type);
       EEPROM.update(addr++, config[p][b].modifier);
@@ -83,8 +78,7 @@ void saveToEEPROM() {
       EEPROM.update(addr++, config[p][b].key);
       EEPROM.update(addr++, config[p][b].key2);
     }
-  }
-  for (int p = 0; p < NUM_PROFILES; p++) {
+  for (int p = 0; p < NUM_PROFILES; p++)
     for (int d = 0; d < 2; d++) {
       EEPROM.update(addr++, encConfig[p][d].type);
       EEPROM.update(addr++, encConfig[p][d].modifier);
@@ -92,9 +86,8 @@ void saveToEEPROM() {
       EEPROM.update(addr++, encConfig[p][d].key);
       EEPROM.update(addr++, encConfig[p][d].key2);
     }
-  }
   EEPROM.update(EEPROM_MAGIC_ADDR, EEPROM_MAGIC_VAL);
-  EEPROM.commit(); // Nécessaire sur RP2040
+  EEPROM.commit();
 }
 
 void loadFromEEPROM() {
@@ -104,7 +97,7 @@ void loadFromEEPROM() {
     return;
   }
   int addr = 0;
-  for (int p = 0; p < NUM_PROFILES; p++) {
+  for (int p = 0; p < NUM_PROFILES; p++)
     for (int b = 0; b < 6; b++) {
       config[p][b].type     = EEPROM.read(addr++);
       config[p][b].modifier = EEPROM.read(addr++);
@@ -112,8 +105,7 @@ void loadFromEEPROM() {
       config[p][b].key      = EEPROM.read(addr++);
       config[p][b].key2     = EEPROM.read(addr++);
     }
-  }
-  for (int p = 0; p < NUM_PROFILES; p++) {
+  for (int p = 0; p < NUM_PROFILES; p++)
     for (int d = 0; d < 2; d++) {
       encConfig[p][d].type     = EEPROM.read(addr++);
       encConfig[p][d].modifier = EEPROM.read(addr++);
@@ -121,7 +113,6 @@ void loadFromEEPROM() {
       encConfig[p][d].key      = EEPROM.read(addr++);
       encConfig[p][d].key2     = EEPROM.read(addr++);
     }
-  }
 }
 
 // =========================
@@ -143,23 +134,26 @@ int lastEncAState = HIGH;
 
 // =========================
 // Envoi des actions
-// Sur XIAO RP2040 avec Seeed core, on utilise Keyboard (TinyUSB)
-// et ConsumerKeyboard pour les media keys
+// Earle Philhower Keyboard.h — pas de KeyboardKeycode ni ConsumerKeycode
+// On utilise directement uint8_t et les constantes KEY_*
 // =========================
 void sendAction(KeyAction action) {
   if (action.type == ACTION_NONE) return;
 
   if (action.type == ACTION_CONSUMER) {
+    // Consumer keys via Keyboard.h Earle Philhower
     uint16_t code = ((uint16_t)action.key2 << 8) | action.key;
-    ConsumerKeyboard.write(code);
+    Keyboard.consumerPress(code);
+    delay(15);
+    Keyboard.consumerRelease();
     return;
   }
 
-  // Clavier — même logique que Pro Micro
-  if (action.modifier != MOD_NONE) Keyboard.press((KeyboardKeycode)action.modifier);
-  if (action.mod2     != MOD_NONE) Keyboard.press((KeyboardKeycode)action.mod2);
+  // Touche clavier standard
+  if (action.modifier != MOD_NONE) Keyboard.press(action.modifier);
+  if (action.mod2     != MOD_NONE) Keyboard.press(action.mod2);
   delay(5);
-  Keyboard.press((KeyboardKeycode)action.key);
+  Keyboard.press(action.key);
   delay(15);
   Keyboard.releaseAll();
 }
@@ -262,7 +256,7 @@ void updateEncoder() {
 }
 
 // =========================
-// Protocole Serial — identique Pro Micro
+// Protocole Serial
 // Format : "CFG P B T M1 M2 K1 K2\n"
 // =========================
 void handleSerialConfig() {
@@ -296,7 +290,6 @@ void updateScreenTimeout() {
 // Setup / Loop
 // =========================
 void setup() {
-  // Init EEPROM RP2040 (taille à réserver)
   EEPROM.begin(256);
 
   for (uint8_t i = 0; i < 6; i++) {
@@ -312,10 +305,8 @@ void setup() {
 
   Serial.begin(9600);
   Keyboard.begin();
-  ConsumerKeyboard.begin();
   loadFromEEPROM();
 
-  // I2C sur GPIO 6 (SDA) et 7 (SCL)
   Wire.setSDA(6);
   Wire.setSCL(7);
   Wire.begin();
