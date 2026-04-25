@@ -70,7 +70,7 @@ Le core Seeed natif ne supporte pas le HID. Il faut installer le core **Earle Ph
 ```
 https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
 ```
-3. **Outils → Type de carte → Gestionnaire de cartes**
+3. **Outils → Carte → Gestionnaire de cartes**
 4. Cherche `RP2040` → installe **"Raspberry Pi Pico/RP2040 by Earle F. Philhower"**
 
 ### 2. Librairies requises
