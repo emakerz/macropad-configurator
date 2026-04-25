@@ -65,7 +65,7 @@ Installe ces librairies via le gestionnaire de librairies Arduino IDE (`Outils �
 
 Le core Seeed natif ne supporte pas le HID. Il faut installer le core **Earle Philhower** qui est le standard recommandé par Seeed eux-mêmes pour le XIAO RP2040.
 
-1. Arduino IDE → **Fichier → Préférences**
+1. Arduino IDE → **Réglages → Préférences**
 2. Dans le champ "URL de gestionnaire de cartes supplémentaires", colle :
 ```
 https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
