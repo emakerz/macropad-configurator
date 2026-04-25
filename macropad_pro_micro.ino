@@ -5,11 +5,8 @@
 #include <HID-Settings.h>
 #include <EEPROM.h>
 
-// NE PAS inclure <Keyboard.h> — conflit avec HID-Project
 
-// =========================
 // OLED
-// =========================
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
@@ -17,24 +14,18 @@
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// =========================
-// Pins
-// =========================
+// Pins 
 const uint8_t switchPins[6] = {9, 8, 4, 7, 6, 5};
 const uint8_t ENC_PIN_A = A1;
 const uint8_t ENC_PIN_B = A2;
 const uint8_t ENC_BTN   = A0;
 
-// =========================
 // Parametres
-// =========================
 #define NUM_PROFILES 4
 const unsigned long SCREEN_TIMEOUT = 5000;
 const unsigned long DEBOUNCE_MS    = 25;
 
-// =========================
 // Types d'action
-// =========================
 #define ACTION_NONE     0   // Bouton non configuré — ne fait rien
 #define ACTION_KEY      1   // Touche clavier
 #define ACTION_CONSUMER 2   // Media/système
@@ -65,7 +56,7 @@ struct KeyAction {
 KeyAction config[NUM_PROFILES][6];
 KeyAction encConfig[NUM_PROFILES][2];
 
-// Par défaut : tout vide (ACTION_NONE)
+// Par défaut : tout vide 
 void loadDefaults() {
   for (int p = 0; p < NUM_PROFILES; p++) {
     for (int b = 0; b < 6; b++)
@@ -125,9 +116,7 @@ void loadFromEEPROM() {
   }
 }
 
-// =========================
 // Etat global
-// =========================
 uint8_t currentProfile = 0;
 bool screenAwake = false;
 unsigned long lastInteractionTime = 0;
@@ -142,9 +131,7 @@ unsigned long switchLastChangeTime[6];
 
 int lastEncAState = HIGH;
 
-// =========================
 // Envoi des actions
-// =========================
 void sendAction(KeyAction action) {
   if (action.type == ACTION_NONE) return;
 
@@ -162,9 +149,7 @@ void sendAction(KeyAction action) {
   Keyboard.releaseAll();
 }
 
-// =========================
 // OLED
-// =========================
 void drawThickRect(int x, int y, int w, int h, int t = 2) {
   for (int i = 0; i < t; i++)
     display.drawRect(x+i, y+i, w-2*i, h-2*i, SSD1306_WHITE);
@@ -213,9 +198,7 @@ void sleepScreen() {
   }
 }
 
-// =========================
 // Handlers
-// =========================
 void handleSwitchPress(uint8_t index) { wakeScreen(); sendAction(config[currentProfile][index]); }
 
 void handleEncoderTurn(int direction) {
@@ -297,9 +280,6 @@ void updateScreenTimeout() {
   if (screenAwake && (millis() - lastInteractionTime > SCREEN_TIMEOUT)) sleepScreen();
 }
 
-// =========================
-// Setup / Loop
-// =========================
 void setup() {
   for (uint8_t i = 0; i < 6; i++) {
     pinMode(switchPins[i], INPUT_PULLUP);
