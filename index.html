@@ -206,9 +206,9 @@ const CODE_TO_HID={
   'F13':0x68,'F14':0x69,'F15':0x6A,'F16':0x6B,'F17':0x6C,'F18':0x6D,
   'F19':0x6E,'F20':0x6F,'F21':0x70,'F22':0x71,'F23':0x72,'F24':0x73,
 };
-const ACTION_KEY=0,ACTION_CONSUMER=1;
+const ACTION_NONE=0,ACTION_KEY=1,ACTION_CONSUMER=2;
 function mk(type,m1,m2,k1,k2,label){return{type,m1,m2,k1,k2,label};}
-function emptyP(){return[mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(0,0,0,0,0,'—'),mk(ACTION_KEY,0,0,0x52,0,'▲ Up'),mk(ACTION_KEY,0,0,0x51,0,'▼ Down')];}
+function emptyP(){return[mk(ACTION_NONE,0,0,0,0,'—'),mk(ACTION_NONE,0,0,0,0,'—'),mk(ACTION_NONE,0,0,0,0,'—'),mk(ACTION_NONE,0,0,0,0,'—'),mk(ACTION_NONE,0,0,0,0,'—'),mk(ACTION_NONE,0,0,0,0,'—'),mk(ACTION_KEY,0,0,0x52,0,'▲ Up'),mk(ACTION_KEY,0,0,0x51,0,'▼ Down')];}
 const DEFAULTS=[emptyP(),emptyP(),emptyP(),emptyP()];
 let port=null,writer=null,reader=null,currentProfile=0,currentBoard='promicro',captureTarget=null,pressedMods=new Set();
 let config=DEFAULTS.map(p=>p.map(a=>({...a})));
@@ -262,7 +262,7 @@ function selectBoard(board){
 function renderPCB(){
   const grid=document.getElementById('sw-grid');grid.innerHTML='';
   for(let i=0;i<6;i++){
-    const cfg=config[currentProfile][i];const ok=cfg.k1!==0 || cfg.type===ACTION_CONSUMER;
+    const cfg=config[currentProfile][i];const ok=cfg.type===ACTION_KEY||cfg.type===ACTION_CONSUMER;
     const wrap=document.createElement('div');wrap.className='sw-wrap';
     const sw=document.createElement('div');sw.className='sw'+(ok?' configured':'');
     sw.innerHTML=`<div class="sw-cap"></div>${ok?`<div class="sw-assignlabel">${cfg.label}</div>`:''}`;
@@ -271,8 +271,8 @@ function renderPCB(){
     wrap.append(sw,num);grid.appendChild(wrap);
   }
   const lc=config[currentProfile][6],rc=config[currentProfile][7];
-  document.getElementById('enc-left-btn').classList.toggle('configured',lc.type!==0);
-  document.getElementById('enc-right-btn').classList.toggle('configured',rc.type!==0);
+  document.getElementById('enc-left-btn').classList.toggle('configured',lc.type===ACTION_KEY||lc.type===ACTION_CONSUMER);
+  document.getElementById('enc-right-btn').classList.toggle('configured',rc.type===ACTION_KEY||rc.type===ACTION_CONSUMER);
 }
 function startCapture(index){
   captureTarget={profile:currentProfile,index};pressedMods=new Set();
