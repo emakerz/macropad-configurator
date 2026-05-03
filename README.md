@@ -136,7 +136,7 @@ Bascule entre les profils avec le **bouton de l'encodeur rotatif** — le numér
 
 La configuration est stockée dans l'**EEPROM** de l'Arduino, qui est une mémoire permanente intégrée à la puce, comme une mini clé USB soudée dessus. Elle retient les données même sans courant.
 
-Chaque bouton occupe des cases fixes dans cette mémoire. Quand tu modifies un bouton via l'interface web, ça écrase uniquement ces cases-là — pas d'accumulation, pas de superposition.
+Chaque bouton occupe des cases fixes dans cette mémoire. Quand tu modifies un bouton via l'interface web, ça écrase uniquement ces cases-là, pas d'accumulation, pas de superposition.
 
 **L'interface web est juste un outil de configuration** comme un tournevis qu'on repose après usage. Une fois les raccourcis envoyés, tu peux fermer l'onglet, couper internet, débrancher et rebrancher le macropad sur n'importe quel ordinateur : tout fonctionne, la config est dans l'Arduino.
 
