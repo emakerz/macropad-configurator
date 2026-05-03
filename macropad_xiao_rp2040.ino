@@ -3,10 +3,8 @@
 #include <Adafruit_SSD1306.h>
 #include <Keyboard.h>
 #include <EEPROM.h>
+#include <Adafruit_NeoPixel.h>
 
-// =========================
-// OLED
-// =========================
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
@@ -14,24 +12,19 @@
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-// =========================
-// Pins XIAO RP2040
-// =========================
+#define NEO_PWR 11
+#define NEO_PIN 12
+Adafruit_NeoPixel pixel(1, NEO_PIN, NEO_GRB + NEO_KHZ800);
+
 const uint8_t switchPins[6] = {0, 28, 1, 29, 27, 26};
 const uint8_t ENC_PIN_A = 4;
 const uint8_t ENC_PIN_B = 3;
 const uint8_t ENC_BTN   = 2;
 
-// =========================
-// Parametres
-// =========================
 #define NUM_PROFILES 4
 const unsigned long SCREEN_TIMEOUT = 5000;
 const unsigned long DEBOUNCE_MS    = 25;
 
-// =========================
-// Types d'action
-// =========================
 #define ACTION_NONE     0
 #define ACTION_KEY      1
 #define ACTION_CONSUMER 2
@@ -50,21 +43,67 @@ struct KeyAction {
   uint8_t key2;
 };
 
-// =========================
-// EEPROM
-// =========================
 #define EEPROM_MAGIC_ADDR 160
-#define EEPROM_MAGIC_VAL  0xF3
+#define EEPROM_MAGIC_VAL  0xF5
 
 KeyAction config[NUM_PROFILES][6];
 KeyAction encConfig[NUM_PROFILES][2];
 
+uint8_t currentProfile = 0;
+bool screenAwake = false;
+unsigned long lastInteractionTime = 0;
+bool lastEncBtnReading = HIGH;
+bool encBtnStableState = HIGH;
+unsigned long encBtnLastChangeTime = 0;
+bool lastSwitchReading[6];
+bool switchStableState[6];
+unsigned long switchLastChangeTime[6];
+int lastEncAState = HIGH;
+
+// =========================
+// NeoPixel helpers
+// =========================
+void setPixel(uint8_t r, uint8_t g, uint8_t b) {
+  pixel.setPixelColor(0, pixel.Color(r, g, b));
+  pixel.show();
+}
+
+void pixelOff() { setPixel(0, 0, 0); }
+
+void pixelForProfile(uint8_t p) {
+  switch (p) {
+    case 0: setPixel(0,  0,  80); break; // Bleu
+    case 1: setPixel(0,  80, 0);  break; // Vert
+    case 2: setPixel(0,  60, 60); break; // Cyan
+    case 3: setPixel(60, 0,  60); break; // Magenta
+  }
+}
+
+void pixelKeyPress() {
+  setPixel(80, 80, 80);
+  delay(60);
+  pixelForProfile(currentProfile);
+}
+
+void pixelProfileChange(uint8_t newProfile) {
+  for (int i = 0; i < 2; i++) {
+    setPixel(80, 80, 80);
+    delay(80);
+    pixelOff();
+    delay(60);
+  }
+  pixelForProfile(newProfile);
+}
+
+// =========================
+// EEPROM
+// =========================
 void loadDefaults() {
   for (int p = 0; p < NUM_PROFILES; p++) {
     for (int b = 0; b < 6; b++)
       config[p][b] = {ACTION_NONE, 0, 0, 0, 0};
-    encConfig[p][0] = {ACTION_KEY, MOD_NONE, MOD_NONE, KEY_UP_ARROW,   0};
-    encConfig[p][1] = {ACTION_KEY, MOD_NONE, MOD_NONE, KEY_DOWN_ARROW, 0};
+    encConfig[p][0] = {ACTION_KEY, MOD_NONE, MOD_NONE, 0x52, 0};
+    encConfig[p][1] = {ACTION_KEY, MOD_NONE, MOD_NONE, 0x51, 0};
   }
 }
 
@@ -116,32 +155,57 @@ void loadFromEEPROM() {
 }
 
 // =========================
-// Etat global
+// Conversion HID -> char
 // =========================
-uint8_t currentProfile = 0;
-bool screenAwake = false;
-unsigned long lastInteractionTime = 0;
-
-bool lastEncBtnReading = HIGH;
-bool encBtnStableState = HIGH;
-unsigned long encBtnLastChangeTime = 0;
-
-bool lastSwitchReading[6];
-bool switchStableState[6];
-unsigned long switchLastChangeTime[6];
-
-int lastEncAState = HIGH;
+char hidToChar(uint8_t hid) {
+  if (hid >= 0x04 && hid <= 0x1D) return 'a' + (hid - 0x04);
+  if (hid >= 0x1E && hid <= 0x26) return '1' + (hid - 0x1E);
+  if (hid == 0x27) return '0';
+  switch (hid) {
+    case 0x28: return KEY_RETURN;
+    case 0x29: return KEY_ESC;
+    case 0x2A: return KEY_BACKSPACE;
+    case 0x2B: return KEY_TAB;
+    case 0x2C: return ' ';
+    case 0x2D: return '-';
+    case 0x2E: return '=';
+    case 0x2F: return '[';
+    case 0x30: return ']';
+    case 0x31: return '\\';
+    case 0x33: return ';';
+    case 0x34: return '\'';
+    case 0x35: return '`';
+    case 0x36: return ',';
+    case 0x37: return '.';
+    case 0x38: return '/';
+    case 0x4C: return KEY_DELETE;
+    case 0x4F: return KEY_RIGHT_ARROW;
+    case 0x50: return KEY_LEFT_ARROW;
+    case 0x51: return KEY_DOWN_ARROW;
+    case 0x52: return KEY_UP_ARROW;
+    case 0x3A: return KEY_F1;
+    case 0x3B: return KEY_F2;
+    case 0x3C: return KEY_F3;
+    case 0x3D: return KEY_F4;
+    case 0x3E: return KEY_F5;
+    case 0x3F: return KEY_F6;
+    case 0x40: return KEY_F7;
+    case 0x41: return KEY_F8;
+    case 0x42: return KEY_F9;
+    case 0x43: return KEY_F10;
+    case 0x44: return KEY_F11;
+    case 0x45: return KEY_F12;
+    default:   return 0;
+  }
+}
 
 // =========================
 // Envoi des actions
-// Earle Philhower Keyboard.h — pas de KeyboardKeycode ni ConsumerKeycode
-// On utilise directement uint8_t et les constantes KEY_*
 // =========================
 void sendAction(KeyAction action) {
   if (action.type == ACTION_NONE) return;
 
   if (action.type == ACTION_CONSUMER) {
-    // Consumer keys via Keyboard.h Earle Philhower
     uint16_t code = ((uint16_t)action.key2 << 8) | action.key;
     Keyboard.consumerPress(code);
     delay(15);
@@ -149,11 +213,18 @@ void sendAction(KeyAction action) {
     return;
   }
 
-  // Touche clavier standard
-  if (action.modifier != MOD_NONE) Keyboard.press(action.modifier);
-  if (action.mod2     != MOD_NONE) Keyboard.press(action.mod2);
+  if (action.modifier == MOD_CTRL)  Keyboard.press(KEY_LEFT_CTRL);
+  if (action.modifier == MOD_SHIFT) Keyboard.press(KEY_LEFT_SHIFT);
+  if (action.modifier == MOD_ALT)   Keyboard.press(KEY_LEFT_ALT);
+  if (action.modifier == MOD_GUI)   Keyboard.press(KEY_LEFT_GUI);
+  if (action.mod2 == MOD_CTRL)      Keyboard.press(KEY_LEFT_CTRL);
+  if (action.mod2 == MOD_SHIFT)     Keyboard.press(KEY_LEFT_SHIFT);
+  if (action.mod2 == MOD_ALT)       Keyboard.press(KEY_LEFT_ALT);
+  if (action.mod2 == MOD_GUI)       Keyboard.press(KEY_LEFT_GUI);
   delay(5);
-  Keyboard.press(action.key);
+
+  char k = hidToChar(action.key);
+  if (k != 0) Keyboard.press(k);
   delay(15);
   Keyboard.releaseAll();
 }
@@ -212,10 +283,15 @@ void sleepScreen() {
 // =========================
 // Handlers
 // =========================
-void handleSwitchPress(uint8_t index) { wakeScreen(); sendAction(config[currentProfile][index]); }
+void handleSwitchPress(uint8_t index) {
+  wakeScreen();
+  pixelKeyPress();
+  sendAction(config[currentProfile][index]);
+}
 
 void handleEncoderTurn(int direction) {
   wakeScreen();
+  pixelKeyPress();
   sendAction(encConfig[currentProfile][direction > 0 ? 1 : 0]);
 }
 
@@ -226,7 +302,9 @@ void updateEncoderButton() {
     if (reading != encBtnStableState) {
       encBtnStableState = reading;
       if (encBtnStableState == LOW) {
-        currentProfile = (currentProfile + 1) % NUM_PROFILES;
+        uint8_t newProfile = (currentProfile + 1) % NUM_PROFILES;
+        pixelProfileChange(newProfile);
+        currentProfile = newProfile;
         wakeScreen();
       }
     }
@@ -257,7 +335,6 @@ void updateEncoder() {
 
 // =========================
 // Protocole Serial
-// Format : "CFG P B T M1 M2 K1 K2\n"
 // =========================
 void handleSerialConfig() {
   if (!Serial.available()) return;
@@ -291,6 +368,14 @@ void updateScreenTimeout() {
 // =========================
 void setup() {
   EEPROM.begin(256);
+  Wire.begin();
+
+  // NeoPixel — activer l'alimentation AVANT pixel.begin()
+  pinMode(NEO_PWR, OUTPUT);
+  digitalWrite(NEO_PWR, HIGH);
+  pixel.begin();
+  pixel.setBrightness(80);
+  pixelOff();
 
   for (uint8_t i = 0; i < 6; i++) {
     pinMode(switchPins[i], INPUT_PULLUP);
@@ -307,15 +392,13 @@ void setup() {
   Keyboard.begin();
   loadFromEEPROM();
 
-  Wire.setSDA(6);
-  Wire.setSCL(7);
-  Wire.begin();
-
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) while(true) {}
   display.clearDisplay();
   display.display();
   display.ssd1306_command(SSD1306_DISPLAYOFF);
   screenAwake = false;
+
+  pixelForProfile(currentProfile);
 }
 
 void loop() {
