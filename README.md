@@ -18,7 +18,7 @@ Projet présenté sur la chaîne YouTube **[Enzo Emakerz](https://www.youtube.co
 
 ## 🧰 Matériel nécessaire
 
-- **[Arduino Pro Micro (ATmega32U4)](https://s.click.aliexpress.com/e/_c3rP5H5N)** **ou** **[Seeed XIAO RP20405](https://s.click.aliexpress.com/e/_c3iJA1rv)**
+- **[Arduino Pro Micro (ATmega32U4)](https://s.click.aliexpress.com/e/_c3rP5H5N)** **ou** **[Seeed XIAO RP2040](https://s.click.aliexpress.com/e/_c3iJA1rv)**
 - **[6 switches mécaniques](https://s.click.aliexpress.com/e/_c4XaSZ0x)**
 - **[1 encodeur rotatif avec bouton](https://s.click.aliexpress.com/e/_c3mJzTl5)**
 - **[Écran OLED SSD1306 128×64 (I2C)](https://fr.aliexpress.com/item/1005006141235306.html?spm=a2g0o.order_list.order_list_main.4.74155e5beo7Ff4&gatewayAdapt=glo2fra)**
@@ -65,12 +65,12 @@ Installe ces librairies via le gestionnaire de librairies Arduino IDE (`Outils �
 
 Le core Seeed natif ne supporte pas le HID. Il faut installer le core **Earle Philhower** qui est le standard recommandé par Seeed eux-mêmes pour le XIAO RP2040.
 
-1. Arduino IDE → **Réglages → Préférences**
+1. Arduino IDE → **Fichier → Préférences**
 2. Dans le champ "URL de gestionnaire de cartes supplémentaires", colle :
 ```
 https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
 ```
-3. **Outils → Carte → Gestionnaire de cartes**
+3. **Outils → Type de carte → Gestionnaire de cartes**
 4. Cherche `RP2040` → installe **"Raspberry Pi Pico/RP2040 by Earle F. Philhower"**
 
 ### 2. Librairies requises
@@ -81,8 +81,9 @@ Installe ces librairies via `Outils → Gérer les bibliothèques` :
 |---|---|
 | `Adafruit SSD1306` | Adafruit |
 | `Adafruit GFX Library` | Adafruit |
+| `Adafruit NeoPixel` | Adafruit |
 
-> ℹ️ `Keyboard.h` et `ConsumerKeyboard.h` sont inclus nativement dans le core Earle Philhower — aucune installation supplémentaire nécessaire.
+> ℹ️ `Keyboard.h` est inclus nativement dans le core Earle Philhower — aucune installation supplémentaire nécessaire.
 
 ### 3. Brochage
 
@@ -93,6 +94,7 @@ Installe ces librairies via `Outils → Gérer les bibliothèques` :
 | GPIO 3 | Encodeur DT |
 | GPIO 2 | Encodeur bouton |
 | GPIO 6 (SDA) / GPIO 7 (SCL) | Écran OLED (I2C) |
+| GPIO 12 | LED RGB NeoPixel (intégrée) |
 
 ### 4. Flasher le code
 
@@ -126,7 +128,7 @@ Installe ces librairies via `Outils → Gérer les bibliothèques` :
 
 Le macropad supporte **4 profils** indépendants. Chaque profil peut avoir des raccourcis complètement différents sur les 6 boutons et l'encodeur.
 
-Bascule entre les profils avec le **bouton de l'encodeur rotatif** et le numéro s'affiche sur l'écran OLED.
+Bascule entre les profils avec le **bouton de l'encodeur rotatif** — le numéro s'affiche sur l'écran OLED, et la LED RGB change de couleur (bleu → vert → cyan → magenta).
 
 ---
 
