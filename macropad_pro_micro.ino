@@ -161,8 +161,8 @@ void drawPageIndicators(uint8_t activePage) {
   const int startX = (SCREEN_WIDTH - totalW) / 2;
   for (int i = 0; i < NUM_PROFILES; i++) {
     int x = startX + i * (sz + gap);
-    if (i == activePage) display.fillRect(x, 50, sz, sz, SSD1306_WHITE);
-    else drawThickRect(x, 50, sz, sz, 2);
+    if (i == activePage) display.fillRect(x, 6, sz, sz, SSD1306_WHITE);
+    else drawThickRect(x, 6, sz, sz, 2);
   }
 }
 
@@ -172,10 +172,9 @@ void drawCenteredBigNumber(char c) {
   char txt[2] = {c, '\0'};
   int16_t x1, y1; uint16_t tw, th;
   display.getTextBounds(txt, 0, 0, &x1, &y1, &tw, &th);
-  display.setCursor((SCREEN_WIDTH - tw) / 2, 10);
+  display.setCursor((SCREEN_WIDTH - tw) / 2, 26);
   display.print(txt);
 }
-
 void drawProfileScreen() {
   if (!screenAwake) return;
   display.clearDisplay();
