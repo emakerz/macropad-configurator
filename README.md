@@ -61,12 +61,9 @@ Installe ces librairies via le gestionnaire de librairies Arduino IDE (`Outils �
 
 ## 🖨️ Fichiers d'impression 3D
 
-Les fichiers STL pour imprimer le boîtier du macropad sont disponibles dans le dossier [`/3D`](https://github.com/emakerz/macropad-configurator/tree/main/3D) de ce repo.
+Les fichiers STL pour imprimer le boîtier du macropad sont disponibles sur MakerWorld :
 
-| Fichier | Description |
-|---|---|
-| `boitier_bas.stl` | Partie inférieure du boîtier |
-| `boitier_haut.stl` | Partie supérieure avec découpes pour les switches |
+👉 **[Télécharger les fichiers 3D sur MakerWorld](https://makerworld.com/)**
 
 > ℹ️ Imprimé en PLA, 0.2mm de hauteur de couche, 20% de remplissage.
 
