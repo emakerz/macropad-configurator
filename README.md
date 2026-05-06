@@ -1,6 +1,6 @@
 # 🎛️ Macropad Configurator
 
-Interface web de configuration pour macropad DIY compatible **Arduino Pro Micro** et **Seeed XIAO RP2040**.  
+Interface web de configuration pour macropad DIY compatible **Arduino Pro Micro**.  
 Projet présenté sur la chaîne YouTube **[Enzo Emakerz](https://www.youtube.com/@emakerz)**. Abonne-toi pour ne rien rater !
 
 ---
@@ -12,13 +12,13 @@ Projet présenté sur la chaîne YouTube **[Enzo Emakerz](https://www.youtube.co
 | 🌐 **Interface de configuration** | [emakerz.github.io/macropad-configurator](https://emakerz.github.io/macropad-configurator) |
 | 📺 **Vidéo YouTube** | *(lien à venir)* |
 | 📦 **Code Arduino Pro Micro** | [Télécharger macropad_pro_micro.ino](https://github.com/emakerz/macropad-configurator/raw/main/macropad_pro_micro.ino) |
-| 📦 **Code XIAO RP2040** | [Télécharger macropad_xiao_rp2040.ino](https://github.com/emakerz/macropad-configurator/raw/main/macropad_xiao_rp2040.ino) |
+| 🖨️ **Fichiers 3D** | [Voir les fichiers d'impression](https://github.com/emakerz/macropad-configurator/tree/main/3D) |
 
 ---
 
 ## 🧰 Matériel nécessaire
 
-- **[Arduino Pro Micro (ATmega32U4)](https://s.click.aliexpress.com/e/_c3rP5H5N)** **ou** **[Seeed XIAO RP2040](https://s.click.aliexpress.com/e/_c3iJA1rv)**
+- **[Arduino Pro Micro (ATmega32U4)](https://s.click.aliexpress.com/e/_c3rP5H5N)**
 - **[6 switches mécaniques](https://s.click.aliexpress.com/e/_c4XaSZ0x)**
 - **[1 encodeur rotatif avec bouton](https://s.click.aliexpress.com/e/_c3mJzTl5)**
 - **[Écran OLED SSD1306 128×64 (I2C)](https://fr.aliexpress.com/item/1005006141235306.html?spm=a2g0o.order_list.order_list_main.4.74155e5beo7Ff4&gatewayAdapt=glo2fra)**
@@ -59,52 +59,16 @@ Installe ces librairies via le gestionnaire de librairies Arduino IDE (`Outils �
 
 ---
 
-## ⚙️ Installation — Seeed XIAO RP2040
+## 🖨️ Fichiers d'impression 3D
 
-### 1. Installer le core Arduino (obligatoire)
+Les fichiers STL pour imprimer le boîtier du macropad sont disponibles dans le dossier [`/3D`](https://github.com/emakerz/macropad-configurator/tree/main/3D) de ce repo.
 
-Le core Seeed natif ne supporte pas le HID. Il faut installer le core **Earle Philhower** qui est le standard recommandé par Seeed eux-mêmes pour le XIAO RP2040.
-
-1. Arduino IDE → **Fichier → Préférences**
-2. Dans le champ "URL de gestionnaire de cartes supplémentaires", colle :
-```
-https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
-```
-3. **Outils → Type de carte → Gestionnaire de cartes**
-4. Cherche `RP2040` → installe **"Raspberry Pi Pico/RP2040 by Earle F. Philhower"**
-
-### 2. Librairies requises
-
-Installe ces librairies via `Outils → Gérer les bibliothèques` :
-
-| Librairie | Auteur |
+| Fichier | Description |
 |---|---|
-| `Adafruit SSD1306` | Adafruit |
-| `Adafruit GFX Library` | Adafruit |
-| `Adafruit NeoPixel` | Adafruit |
+| `boitier_bas.stl` | Partie inférieure du boîtier |
+| `boitier_haut.stl` | Partie supérieure avec découpes pour les switches |
 
-> ℹ️ `Keyboard.h` est inclus nativement dans le core Earle Philhower — aucune installation supplémentaire nécessaire.
-
-### 3. Brochage
-
-| Pin | Fonction |
-|---|---|
-| GPIO 0, 28, 1, 29, 27, 26 | Switches BTN 1 → 6 |
-| GPIO 4 | Encodeur CLK |
-| GPIO 3 | Encodeur DT |
-| GPIO 2 | Encodeur bouton |
-| GPIO 6 (SDA) / GPIO 7 (SCL) | Écran OLED (I2C) |
-| GPIO 12 | LED RGB NeoPixel (intégrée) |
-
-### 4. Flasher le code
-
-1. Télécharge [`macropad_xiao_rp2040.ino`](https://github.com/emakerz/macropad-configurator/raw/main/macropad_xiao_rp2040.ino)
-2. Ouvre-le dans Arduino IDE
-3. Sélectionne la carte : `Outils → Type de carte → Raspberry Pi Pico/RP2040 → Seeed XIAO RP2040`
-4. Sélectionne le bon port USB
-5. Clique sur **Téléverser**
-
-> ⚠️ Si la carte n'est pas détectée, maintiens le bouton **B** (Boot) enfoncé pendant le branchement USB pour entrer en mode bootloader (un disque "RPI-RP2" apparaît sur ton ordinateur), puis téléverse immédiatement.
+> ℹ️ Imprimé en PLA, 0.2mm de hauteur de couche, 20% de remplissage.
 
 ---
 
@@ -114,13 +78,12 @@ Installe ces librairies via `Outils → Gérer les bibliothèques` :
 
 1. Branche ton macropad en USB
 2. Ouvre l'interface : [emakerz.github.io/macropad-configurator](https://emakerz.github.io/macropad-configurator)
-3. Sélectionne ta carte en haut (**Pro Micro** ou **XIAO RP2040**)
-4. Clique sur **⚡ Connecter** et sélectionne le port USB
-5. Choisis un profil (1 à 4)
-6. Clique sur **🎯 Configurer** sur le bouton souhaité
-7. **Onglet ⌨️ Clavier** : maintiens tes modifiers (Ctrl, Shift, Alt, ⌘/Win) puis appuie sur la touche
-8. **Onglet 🔊 Média / Système** : choisis une action (Volume, Luminosité, Play/Pause…)
-9. La config est **automatiquement sauvegardée** dans l'Arduino — elle persiste même sans l'interface
+3. Clique sur **⚡ Connecter** et sélectionne le port USB
+4. Choisis un profil (1 à 4)
+5. Clique sur **🎯 Configurer** sur le bouton souhaité
+6. **Onglet ⌨️ Clavier** : maintiens tes modifiers (Ctrl, Shift, Alt, ⌘/Win) puis appuie sur la touche
+7. **Onglet 🔊 Média / Système** : choisis une action (Volume, Luminosité, Play/Pause…)
+8. La config est **automatiquement sauvegardée** dans l'Arduino — elle persiste même sans l'interface
 
 ---
 
@@ -128,7 +91,7 @@ Installe ces librairies via `Outils → Gérer les bibliothèques` :
 
 Le macropad supporte **4 profils** indépendants. Chaque profil peut avoir des raccourcis complètement différents sur les 6 boutons et l'encodeur.
 
-Bascule entre les profils avec le **bouton de l'encodeur rotatif** — le numéro s'affiche sur l'écran OLED, et la LED RGB change de couleur (bleu → vert → cyan → magenta).
+Bascule entre les profils avec le **bouton de l'encodeur rotatif** — le numéro s'affiche sur l'écran OLED.
 
 ---
 
