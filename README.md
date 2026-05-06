@@ -105,6 +105,23 @@ Chaque bouton occupe des cases fixes dans cette mémoire. Quand tu modifies un b
 
 ---
 
+---
+
+## 🚀 Passer à la version Pro 
+
+Tu veux aller plus loin que ce projet DIY et apprendre à réaliser ta première PCB avec Kicad ?
+
+La **V2 du Macropad Emakerz** est disponible dans la formation complète sur [emakerz.com](https://www.emakerz.com/boutique) :
+
+- 🟢 **PCB sur mesure** — tout est propre et soudé
+- 🎨 **Design professionnel** — boîtier aux finitions soignées
+- 💡 **LEDs adressables** — retour lumineux 
+- ⚡ **Microcontrôleur plus adapté** — plus petit et une meilleure compatibilité
+
+👉 **[Découvrir la formation](https://www.emakerz.com/boutique)**
+
+---
+
 ## 📄 Licence
 
 Projet open-source — libre d'utilisation et de modification.  
