@@ -61,7 +61,7 @@ Installe ces librairies via le gestionnaire de librairies Arduino IDE (`Outils �
 
 ## 🖨️ Fichiers d'impression 3D
 
-Les fichiers STL pour imprimer le boîtier du macropad sont disponibles sur MakerWorld :
+Les fichiers STL pour imprimer les keycaps "Lego" du macropad sont disponibles sur MakerWorld :
 
 👉 **[Télécharger les fichiers 3D sur MakerWorld](https://makerworld.com/)**
 
