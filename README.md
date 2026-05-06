@@ -63,7 +63,7 @@ Installe ces librairies via le gestionnaire de librairies Arduino IDE (`Outils �
 
 Les fichiers STL pour imprimer les keycaps "Lego" du macropad sont disponibles sur MakerWorld :
 
-👉 **[Télécharger les fichiers 3D sur MakerWorld](https://makerworld.com/)**
+👉 **[Télécharger les fichiers 3D sur MakerWorld](https://makerworld.com/fr/models/2766777-macropad-bricks-pad#profileId-3072540)**
 
 > ℹ️ Imprimé en PLA, 0.2mm de hauteur de couche, 20% de remplissage.
 
