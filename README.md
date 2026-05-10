@@ -10,7 +10,7 @@ Projet présenté sur la chaîne YouTube **[Enzo Emakerz](https://www.youtube.co
 | | |
 |---|---|
 | 🌐 **Interface de configuration** | [emakerz.github.io/macropad-configurator](https://emakerz.github.io/macropad-configurator) |
-| 📺 **Vidéo YouTube** | [Vidéo MacroPad] (https://youtu.be/o8nbgDhLRm4?si=eeItlpu0HclGDnIh) |
+| 📺 **Vidéo YouTube** | [Vidéo MacroPad](https://youtu.be/o8nbgDhLRm4?si=eeItlpu0HclGDnIh) |
 | 📦 **Code Arduino Pro Micro** | [Télécharger macropad_pro_micro.ino](https://github.com/emakerz/macropad-configurator/raw/main/macropad_pro_micro.ino) |
 | 🖨️ **Fichiers 3D** | [Voir les fichiers d'impression](https://github.com/emakerz/macropad-configurator/tree/main/3D) |
 
